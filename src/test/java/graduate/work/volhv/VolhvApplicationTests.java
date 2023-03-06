@@ -1,4 +1,4 @@
-package com.example.volhv;
+package graduate.work.volhv;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

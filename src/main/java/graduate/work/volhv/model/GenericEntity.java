@@ -1,4 +1,4 @@
-package com.example.volhv.model;
+package graduate.work.volhv.model;
 
 import lombok.Data;
 
@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-//todo: type -- Enum
 public class GenericEntity {
     private String tableName;
     //key=column name; value=type (eg. Long, String...)
