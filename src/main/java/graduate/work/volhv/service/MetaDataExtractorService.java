@@ -1,32 +1,29 @@
 package graduate.work.volhv.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@Slf4j
 @Service
 public class MetaDataExtractorService {
-    private final DatabaseMetaData databaseMetaData;
 
-    public MetaDataExtractorService(Connection connection) throws SQLException {
-        this.databaseMetaData = connection.getMetaData();
-        DatabaseMetaData databaseMetaData = connection.getMetaData();
-    }
-
-    public void extractTableInfo() throws SQLException {
-        try (ResultSet resultSet = databaseMetaData.getTables(null, null, "CUST%", new String[] { "TABLE" })) {
+    public String extractTableInfo(DatabaseMetaData databaseMetaData) throws SQLException {
+        StringBuilder result = new StringBuilder();
+        try (ResultSet resultSet = databaseMetaData.getTables(null, null, "%", new String[] { "TABLE" })) {
             while (resultSet.next()) {
                 // Print the names of existing tables
-                System.out.println(resultSet.getString("TABLE_NAME"));
-                System.out.println(resultSet.getString("REMARKS"));
+                result.append(resultSet.getString("TABLE_NAME")).append("\n");
             }
         }
+        log.info("result: {}", result);
+        return String.valueOf(result);
     }
 
-    public void extractSystemTables() throws SQLException {
+    public void extractSystemTables(DatabaseMetaData databaseMetaData) throws SQLException {
         try (ResultSet resultSet = databaseMetaData.getTables(null, null, null, new String[] { "SYSTEM TABLE" })) {
             while (resultSet.next()) {
                 // Print the names of system tables
@@ -35,7 +32,7 @@ public class MetaDataExtractorService {
         }
     }
 
-    public void extractViews() throws SQLException {
+    public void extractViews(DatabaseMetaData databaseMetaData) throws SQLException {
         try(ResultSet resultSet = databaseMetaData.getTables(null, null, null, new String[] { "VIEW" })) {
             while (resultSet.next()) {
                 // Print the names of existing views
@@ -44,20 +41,23 @@ public class MetaDataExtractorService {
         }
     }
 
-    public void extractColumnInfo(String tableName) throws SQLException {
-        try(ResultSet columns = databaseMetaData.getColumns(null, null, tableName, null)) {
+    public String extractColumnInfo(DatabaseMetaData databaseMetaData, String tableName) throws SQLException {
+        StringBuilder result = new StringBuilder();
+        try (ResultSet columns = databaseMetaData.getColumns(null, null, tableName, null)) {
             while (columns.next()) {
                 String columnName = columns.getString("COLUMN_NAME");
                 String columnSize = columns.getString("COLUMN_SIZE");
                 String datatype = columns.getString("DATA_TYPE");
                 String isNullable = columns.getString("IS_NULLABLE");
                 String isAutoIncrement = columns.getString("IS_AUTOINCREMENT");
-                System.out.println(String.format("ColumnName: %s, columnSize: %s, datatype: %s, isColumnNullable: %s, isAutoIncrementEnabled: %s", columnName, columnSize, datatype, isNullable, isAutoIncrement));
+                result.append(String.format("ColumnName: %s, columnSize: %s, datatype: %s, isColumnNullable: %s, isAutoIncrementEnabled: %s\n", columnName, columnSize, datatype, isNullable, isAutoIncrement));
             }
         }
+        log.info("result: {}", result);
+        return String.valueOf(result);
     }
 
-    public void extractPrimaryKeys(String tableName) throws SQLException {
+    public void extractPrimaryKeys(DatabaseMetaData databaseMetaData, String tableName) throws SQLException {
         try(ResultSet primaryKeys = databaseMetaData.getPrimaryKeys(null, null, tableName)) {
             while (primaryKeys.next()) {
                 String primaryKeyColumnName = primaryKeys.getString("COLUMN_NAME");
@@ -67,42 +67,42 @@ public class MetaDataExtractorService {
         }
     }
 
-    public void extractForeignKeys(String tableName) throws SQLException {
+    public void extractForeignKeys(DatabaseMetaData databaseMetaData, String tableName) throws SQLException {
         try(ResultSet foreignKeys = databaseMetaData.getImportedKeys(null, null, tableName)) {
             while (foreignKeys.next()) {
                 String pkTableName = foreignKeys.getString("PKTABLE_NAME");
                 String fkTableName = foreignKeys.getString("FKTABLE_NAME");
                 String pkColumnName = foreignKeys.getString("PKCOLUMN_NAME");
                 String fkColumnName = foreignKeys.getString("FKCOLUMN_NAME");
-                System.out.println(String.format("pkTableName:%s, fkTableName:%s, pkColumnName:%s, fkColumnName:%s", pkTableName, fkTableName, pkColumnName, fkColumnName));
+                System.out.printf("pkTableName:%s, fkTableName:%s, pkColumnName:%s, fkColumnName:%s%n", pkTableName, fkTableName, pkColumnName, fkColumnName);
             }
         }
     }
 
-    public void extractDatabaseInfo() throws SQLException {
+    public void extractDatabaseInfo(DatabaseMetaData databaseMetaData) throws SQLException {
         String productName = databaseMetaData.getDatabaseProductName();
         String productVersion = databaseMetaData.getDatabaseProductVersion();
 
         String driverName = databaseMetaData.getDriverName();
         String driverVersion = databaseMetaData.getDriverVersion();
 
-        System.out.println(String.format("Product name:%s, Product version:%s", productName, productVersion));
-        System.out.println(String.format("Driver name:%s, Driver Version:%s", driverName, driverVersion));
+        System.out.printf("Product name:%s, Product version:%s%n", productName, productVersion);
+        System.out.printf("Driver name:%s, Driver Version:%s%n", driverName, driverVersion);
     }
 
-    public void extractUserName() throws SQLException {
+    public void extractUserName(DatabaseMetaData databaseMetaData) throws SQLException {
         String userName = databaseMetaData.getUserName();
         System.out.println(userName);
         try(ResultSet schemas = databaseMetaData.getSchemas()) {
             while (schemas.next()) {
                 String table_schem = schemas.getString("TABLE_SCHEM");
                 String table_catalog = schemas.getString("TABLE_CATALOG");
-                System.out.println(String.format("Table_schema:%s, Table_catalog:%s", table_schem, table_catalog));
+                System.out.printf("Table_schema:%s, Table_catalog:%s%n", table_schem, table_catalog);
             }
         }
     }
 
-    public void extractSupportedFeatures() throws SQLException {
+    public void extractSupportedFeatures(DatabaseMetaData databaseMetaData) throws SQLException {
         System.out.println("Supports scrollable & Updatable Result Set: " + databaseMetaData.supportsResultSetConcurrency(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE));
         System.out.println("Supports Full Outer Joins: " + databaseMetaData.supportsFullOuterJoins());
         System.out.println("Supports Stored Procedures: " + databaseMetaData.supportsStoredProcedures());
