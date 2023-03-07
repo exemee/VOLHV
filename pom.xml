@@ -11,7 +11,7 @@
     <groupId>com.example</groupId>
     <artifactId>VOLHV</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>VOLHV</name>
     <description>VOLHV</description>
     <properties>
@@ -74,6 +74,10 @@
             <artifactId>hibernate-validator</artifactId>
             <version>8.0.0.Final</version>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -92,5 +96,6 @@
             </plugin>
         </plugins>
     </build>
+
 
 </project>
